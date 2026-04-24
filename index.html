@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Executive Car Wash — Puerto Rico's Premier Express Carwash</title>
+  <meta name="description" content="Executive Car Wash — Luxury · Rápido · Eficiente. Puerto Rico's premier automated tunnel carwash." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600;1,700&family=Inter:wght@300;400;500;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <style>
+    /* ─── Design Tokens ─────────────────────────────────── */
+    :root {
+      --bg:           #0a0a0f;
+      --bg-surface:   #111118;
+      --gold:         #c9922a;
+      --gold-light:   #f0c060;
+      --gold-dim:     rgba(201,146,42,0.35);
+      --white:        #ffffff;
+      --muted:        rgba(255,255,255,0.55);
+      --muted-dim:    rgba(255,255,255,0.25);
+
+      --light-bg:     #fafaf8;
+      --light-text:   #1a1a18;
+      --light-body:   #4a4a48;
+      --light-gold:   #c9922a;
+
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+
+      --ease-out:     cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out:  cubic-bezier(0.76, 0, 0.24, 1);
+      --dur-fast:     150ms;
+      --dur-normal:   300ms;
+      --dur-slow:     600ms;
+    }
+
+    /* ─── Reset & Base ──────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 1rem;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* Grain texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* ─── Navigation ────────────────────────────────────── */
+    #nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 2.5rem;
+      background: rgba(10,10,15,0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(201,146,42,0.12);
+    }
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 2.5rem;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      text-decoration: none;
+    }
+    .nav-logo-text {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--gold-light);
+    }
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      position: relative;
+      transition: color var(--dur-fast) var(--ease-out);
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 100%; height: 1px;
+      background: var(--gold-light);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform var(--dur-normal) var(--ease-out);
+    }
+    .nav-links a:hover { color: var(--gold-light); }
+    .nav-links a:hover::after { transform: scaleX(1); }
+    .nav-links a:focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 4px;
+      border-radius: 2px;
+    }
+
+    /* Due Diligence nav button */
+    .nav-dd-wrap { position: relative; }
+    #nav-dd-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1.1rem;
+      border: 1px solid rgba(201,146,42,0.45);
+      background: transparent;
+      color: var(--gold);
+      font-family: var(--font-body);
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition:
+        border-color var(--dur-fast),
+        color var(--dur-fast),
+        background var(--dur-fast);
+    }
+    #nav-dd-btn:hover {
+      border-color: var(--gold);
+      background: rgba(201,146,42,0.08);
+      color: var(--gold-light);
+    }
+    #nav-dd-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+    #dd-panel {
+      display: none;
+      position: absolute;
+      top: calc(100% + 0.875rem);
+      right: 0;
+      min-width: 270px;
+      background: #0e0e14;
+      border: 1px solid rgba(201,146,42,0.22);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+    }
+    #dd-panel.open { display: block; }
+    .dd-header {
+      padding: 0.875rem 1.25rem;
+      border-bottom: 1px solid rgba(201,146,42,0.1);
+      font-size: 0.56rem;
+      font-weight: 700;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .dd-links { list-style: none; }
+    .dd-links li a {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.875rem 1.25rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      transition: color var(--dur-fast), background var(--dur-fast);
+    }
+    .dd-links li:last-child a { border-bottom: none; }
+    .dd-links li a:hover { color: var(--gold-light); background: rgba(201,146,42,0.05); }
+    .dd-links li a:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
+    .dd-ext {
+      font-size: 0.5rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.6;
+      padding: 0.15rem 0.4rem;
+      border: 1px solid rgba(201,146,42,0.2);
+    }
+
+    /* ─── Video Section ─────────────────────────────────── */
+    #video-section {
+      position: relative;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #tunnel-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ─── About (Light) ─────────────────────────────────── */
+    #about {
+      background: var(--light-bg);
+      padding: clamp(6rem, 12vw, 10rem) 0;
+      position: relative;
+    }
+    #about::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+    .about-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 clamp(1.5rem, 6vw, 5rem);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(3rem, 7vw, 7rem);
+      align-items: center;
+    }
+    @media (max-width: 768px) {
+      .about-inner { grid-template-columns: 1fr; }
+    }
+
+    .about-eyebrow {
+      font-size: 0.56rem;
+      font-weight: 500;
+      letter-spacing: 0.38em;
+      text-transform: uppercase;
+      color: var(--light-gold);
+      margin-bottom: 1.25rem;
+    }
+    .about-heading {
+      font-family: var(--font-display);
+      font-size: clamp(2.25rem, 3.5vw, 3.25rem);
+      font-weight: 600;
+      line-height: 1.08;
+      color: var(--light-text);
+      margin-bottom: 1.5rem;
+    }
+    .about-heading em {
+      font-style: italic;
+      color: var(--light-gold);
+    }
+    .about-gold-rule {
+      display: block;
+      width: 44px;
+      height: 1px;
+      background: var(--light-gold);
+      opacity: 0.45;
+      margin-bottom: 2rem;
+    }
+    .about-copy p {
+      font-size: 0.95rem;
+      color: var(--light-body);
+      line-height: 1.9;
+      margin-bottom: 1.25rem;
+    }
+    .about-copy p:last-of-type { margin-bottom: 0; }
+
+    .about-pillars {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-top: 2.75rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(201,146,42,0.18);
+    }
+    .pillar-item {
+      flex: 1;
+      text-align: center;
+    }
+    .pillar-label {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--light-text);
+      letter-spacing: 0.01em;
+      margin-bottom: 0.2rem;
+    }
+    .pillar-sub {
+      display: block;
+      font-size: 0.56rem;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--light-gold);
+    }
+    .pillar-sep {
+      width: 1px;
+      height: 2rem;
+      background: rgba(201,146,42,0.22);
+      flex-shrink: 0;
+    }
+
+    .about-image { position: relative; }
+    .about-image img {
+      width: 100%;
+      height: 580px;
+      object-fit: cover;
+      display: block;
+    }
+    .about-image-frame {
+      position: absolute;
+      top: -14px;
+      right: -14px;
+      bottom: 14px;
+      left: 14px;
+      border: 1px solid rgba(201,146,42,0.28);
+      pointer-events: none;
+    }
+    .about-image::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(150deg, transparent 65%, rgba(201,146,42,0.04));
+      pointer-events: none;
+    }
+
+    /* ─── Contact (Light) ───────────────────────────────── */
+    #contact {
+      background: var(--light-bg);
+      padding: clamp(5rem, 10vw, 8rem) 0 clamp(5rem, 10vw, 8rem);
+    }
+    .contact-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 clamp(1.5rem, 6vw, 5rem);
+    }
+    .contact-header {
+      text-align: center;
+      margin-bottom: clamp(3rem, 6vw, 4.5rem);
+    }
+    .contact-eyebrow {
+      font-size: 0.56rem;
+      font-weight: 500;
+      letter-spacing: 0.38em;
+      text-transform: uppercase;
+      color: var(--light-gold);
+      margin-bottom: 1rem;
+    }
+    .contact-heading {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 3vw, 3rem);
+      font-weight: 600;
+      color: var(--light-text);
+      line-height: 1.1;
+    }
+    .contact-heading em { font-style: italic; color: var(--light-gold); }
+    .contact-rule {
+      display: block;
+      width: 44px;
+      height: 1px;
+      background: var(--light-gold);
+      opacity: 0.4;
+      margin: 1.5rem auto 0;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.6fr;
+      gap: clamp(2rem, 5vw, 4rem);
+    }
+    @media (max-width: 768px) {
+      .contact-grid { grid-template-columns: 1fr; }
+    }
+    .contact-info { display: flex; flex-direction: column; gap: 2rem; }
+    .info-label {
+      font-size: 0.54rem;
+      font-weight: 600;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--light-gold);
+      margin-bottom: 0.4rem;
+    }
+    .info-value {
+      font-size: 0.875rem;
+      color: var(--light-body);
+      line-height: 1.7;
+    }
+    .info-value a {
+      color: var(--light-body);
+      text-decoration: none;
+      transition: color var(--dur-fast);
+    }
+    .info-value a:hover { color: var(--light-gold); }
+
+    .contact-form { display: flex; flex-direction: column; gap: 1.25rem; }
+    .form-field { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-field label {
+      font-size: 0.56rem;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--light-gold);
+    }
+    .form-field input,
+    .form-field textarea {
+      background: var(--white);
+      border: 1px solid rgba(201,146,42,0.22);
+      color: var(--light-text);
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      padding: 0.875rem 1rem;
+      outline: none;
+      transition: border-color var(--dur-fast);
+      resize: vertical;
+    }
+    .form-field input::placeholder,
+    .form-field textarea::placeholder { color: rgba(74,74,72,0.35); }
+    .form-field input:focus,
+    .form-field textarea:focus { border-color: var(--light-gold); }
+
+    .form-honeypot { display: none !important; }
+
+    .form-submit {
+      padding: 1rem 2.5rem;
+      background: transparent;
+      border: 1px solid var(--light-gold);
+      color: var(--light-gold);
+      font-family: var(--font-body);
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      align-self: flex-start;
+      transition: color var(--dur-normal) var(--ease-out);
+    }
+    .form-submit::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--light-gold);
+      transform: translateY(101%);
+      transition: transform var(--dur-normal) var(--ease-out);
+    }
+    .form-submit span { position: relative; z-index: 1; }
+    .form-submit:hover { color: var(--white); }
+    .form-submit:hover::before { transform: translateY(0); }
+    .form-submit:focus-visible { outline: 2px solid var(--light-gold); outline-offset: 3px; }
+
+    /* ─── Footer ────────────────────────────────────────── */
+    footer {
+      background: var(--light-bg);
+      padding: 2.5rem clamp(1.5rem, 6vw, 5rem);
+      border-top: 1px solid rgba(201,146,42,0.18);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+    .footer-brand {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--light-gold);
+    }
+    .footer-tagline {
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--light-body);
+      opacity: 0.5;
+      margin-top: 0.2rem;
+    }
+    .footer-links { display: flex; gap: 2rem; list-style: none; }
+    .footer-links a {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--light-body);
+      opacity: 0.5;
+      text-decoration: none;
+      transition: color var(--dur-fast), opacity var(--dur-fast);
+    }
+    .footer-links a:hover { color: var(--light-gold); opacity: 1; }
+    .footer-copy { font-size: 0.65rem; color: var(--light-body); opacity: 0.4; }
+
+    /* ─── Splash Gate ───────────────────────────────────── */
+    #splash {
+      position: fixed;
+      inset: 0;
+      z-index: 8000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      overflow: hidden;
+    }
+    #splash::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 60%, rgba(201,146,42,0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 30% 25% at 50% 45%, rgba(240,192,96,0.06) 0%, transparent 55%);
+      pointer-events: none;
+    }
+    .splash-inner { position: relative; text-align: center; padding: 2rem; }
+    .splash-exec {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-weight: 700;
+      font-size: clamp(3.5rem, 9vw, 8rem);
+      color: var(--gold-light);
+      line-height: 1;
+    }
+    .splash-subtitle {
+      font-family: var(--font-body);
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.34em;
+      text-transform: uppercase;
+      color: var(--white);
+      margin-top: 0.4rem;
+    }
+    .splash-rule {
+      display: block;
+      width: 60px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-light), transparent);
+      margin: 1.75rem auto;
+    }
+    .splash-tagline {
+      font-size: 0.6rem;
+      font-weight: 500;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 3rem;
+    }
+    #splash-cta {
+      display: inline-block;
+      padding: 0.9rem 2.75rem;
+      border: 1px solid var(--gold);
+      background: transparent;
+      color: var(--gold-light);
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition:
+        background var(--dur-normal) var(--ease-out),
+        color var(--dur-normal) var(--ease-out),
+        box-shadow var(--dur-normal) var(--ease-out),
+        transform var(--dur-fast) var(--ease-out);
+    }
+    #splash-cta:hover {
+      background: var(--gold);
+      color: var(--bg);
+      box-shadow: 0 0 48px rgba(201,146,42,0.35);
+    }
+    #splash-cta:focus-visible { outline: 2px solid var(--gold-light); outline-offset: 4px; }
+    #splash-cta:active { transform: scale(0.97); }
+
+    /* ─── Reveal helper ─────────────────────────────────── */
+    .reveal { opacity: 0; transform: translateY(24px); }
+
+    /* ─── Mobile ────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      #nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      footer { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Splash Gate ──────────────────────────────────── -->
+  <div id="splash" role="dialog" aria-modal="true" aria-label="Enter Executive Car Wash">
+    <div class="splash-inner">
+      <div id="splash-crown" aria-hidden="true">
+        <svg width="44" height="44" viewBox="0 0 22 22" fill="none">
+          <path d="M11 2L13.5 7.5H19L14.5 11L16.5 17L11 13.5L5.5 17L7.5 11L3 7.5H8.5L11 2Z" stroke="#f0c060" stroke-width="1.2" fill="none"/>
+        </svg>
+      </div>
+      <div id="splash-brand">
+        <p class="splash-exec">Executive</p>
+        <p class="splash-subtitle">Car Wash</p>
+      </div>
+      <span class="splash-rule" id="splash-rule" aria-hidden="true"></span>
+      <p class="splash-tagline" id="splash-tagline">Luxury &middot; Rápido &middot; Eficiente</p>
+      <button id="splash-cta" autofocus>Go Exec or Go Dirty</button>
+    </div>
+  </div>
+
+  <!-- ── Navigation ───────────────────────────────────── -->
+  <nav id="nav" aria-label="Main navigation">
+    <div class="nav-left">
+      <a href="#video-section" class="nav-logo" aria-label="Executive Car Wash home">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+          <path d="M11 2L13.5 7.5H19L14.5 11L16.5 17L11 13.5L5.5 17L7.5 11L3 7.5H8.5L11 2Z" stroke="#c9922a" stroke-width="1.2" fill="none"/>
+        </svg>
+        <span class="nav-logo-text">Executive</span>
+      </a>
+      <ul class="nav-links" role="list">
+        <li><a href="#about">About</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+    <div class="nav-dd-wrap">
+      <button id="nav-dd-btn" aria-expanded="false" aria-controls="dd-panel">
+        Due Diligence
+        <svg width="10" height="7" viewBox="0 0 10 7" fill="none" aria-hidden="true">
+          <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div id="dd-panel" role="region" aria-label="Due Diligence documents">
+        <p class="dd-header">Business Documents</p>
+        <ul class="dd-links">
+          <li>
+            <a href="MCW_Construction_Cost_Model%20copy.xlsx" download="MCW_Construction_Cost_Model.xlsx">
+              Construction Cost Model
+              <span class="dd-ext">xlsx</span>
+            </a>
+          </li>
+          <li>
+            <a href="PR_Car_Wash_Financial_Model%20copy.xlsx" download="PR_Car_Wash_Financial_Model.xlsx">
+              Financial Model
+              <span class="dd-ext">xlsx</span>
+            </a>
+          </li>
+          <li>
+            <a href="PR_Car_Wash_Due_Diligence_Tracker%20copy.xlsx" download="PR_Car_Wash_Due_Diligence_Tracker.xlsx">
+              Due Diligence Tracker
+              <span class="dd-ext">xlsx</span>
+            </a>
+          </li>
+          <li>
+            <a href="PR_Car_Wash_Market_Intelligence_Report%20copy.docx" download="PR_Car_Wash_Market_Intelligence_Report.docx">
+              Market Intelligence Report
+              <span class="dd-ext">docx</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── Video Section ─────────────────────────────────── -->
+  <section id="video-section" aria-label="Executive Car Wash tunnel experience">
+    <video
+      id="tunnel-video"
+      src="Brand Assets/Video.mp4"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="auto"
+      aria-hidden="true"
+    ></video>
+  </section>
+
+  <!-- ── About ─────────────────────────────────────────── -->
+  <section id="about" aria-labelledby="about-heading">
+    <div class="about-inner">
+
+      <div class="about-copy">
+        <p class="about-eyebrow">Our Story</p>
+        <h2 id="about-heading" class="about-heading reveal">
+          Puerto Rico's Premier <em>Executive Carwash</em>
+        </h2>
+        <span class="about-gold-rule reveal" aria-hidden="true"></span>
+
+        <p class="reveal">Executive Car Wash was born from a simple belief: that every driver in Puerto Rico deserves a world-class carwash experience — fast, effortless, and built for the island's climate and culture.</p>
+        <p class="reveal">We built our tunnel around Sonny's industry-leading equipment, a full R.O. water filtration system, and a 50% water reclaim platform — because delivering excellence should never cost the earth.</p>
+        <p class="reveal">From the moment you arrive to the moment you drive away spotless, every stage of our process is engineered to deliver a showroom-quality result in minutes, not hours.</p>
+
+        <div class="about-pillars reveal">
+          <div class="pillar-item">
+            <span class="pillar-label">Speed</span>
+            <span class="pillar-sub">Under 5 min</span>
+          </div>
+          <div class="pillar-sep" aria-hidden="true"></div>
+          <div class="pillar-item">
+            <span class="pillar-label">Luxury</span>
+            <span class="pillar-sub">Sonny's systems</span>
+          </div>
+          <div class="pillar-sep" aria-hidden="true"></div>
+          <div class="pillar-item">
+            <span class="pillar-label">Sustain</span>
+            <span class="pillar-sub">50% reclaim</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-image reveal">
+        <div class="about-image-frame" aria-hidden="true"></div>
+        <img
+          src="Brand Assets/Sequence Images/S9 Gemini 2.png"
+          alt="Executive Car Wash tunnel exit — tropical Puerto Rico setting"
+          width="600"
+          height="580"
+          loading="lazy"
+        />
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── Contact ───────────────────────────────────────── -->
+  <section id="contact" aria-labelledby="contact-heading">
+    <div class="contact-inner">
+
+      <div class="contact-header reveal">
+        <p class="contact-eyebrow">Find Us</p>
+        <h2 id="contact-heading" class="contact-heading">Get in <em>Touch</em></h2>
+        <span class="contact-rule" aria-hidden="true"></span>
+      </div>
+
+      <div class="contact-grid">
+        <div class="contact-info">
+          <div class="reveal">
+            <p class="info-label">Location</p>
+            <p class="info-value">Puerto Rico<br>Address — Coming Soon</p>
+          </div>
+          <div class="reveal">
+            <p class="info-label">Hours</p>
+            <p class="info-value">Monday – Sunday<br>7:00 AM – 9:00 PM</p>
+          </div>
+          <div class="reveal">
+            <p class="info-label">Contact</p>
+            <p class="info-value">
+              <a href="tel:+1787000000">(787) 000-0000</a><br>
+              <a href="mailto:info@executivecarwashpr.com">info@executivecarwashpr.com</a>
+            </p>
+          </div>
+          <div class="reveal">
+            <p class="info-label">Follow Us</p>
+            <p class="info-value" style="display:flex;gap:1.25rem;">
+              <a href="#" aria-label="Instagram">Instagram</a>
+              <a href="#" aria-label="Facebook">Facebook</a>
+              <a href="#" aria-label="TikTok">TikTok</a>
+            </p>
+          </div>
+        </div>
+
+        <form class="contact-form reveal" id="contact-form" onsubmit="handleSubmit(event)" novalidate aria-label="Contact form">
+          <div class="form-honeypot" aria-hidden="true">
+            <input type="text" name="website" tabindex="-1" autocomplete="off" />
+          </div>
+          <div class="form-field">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" placeholder="Your name" required autocomplete="name" />
+          </div>
+          <div class="form-field">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="your@email.com" required autocomplete="email" />
+          </div>
+          <div class="form-field">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" rows="5" placeholder="How can we help?" required></textarea>
+          </div>
+          <button type="submit" class="form-submit"><span>Send Message</span></button>
+          <p id="form-status" aria-live="polite" style="font-size:0.8rem;display:none;"></p>
+        </form>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── Footer ────────────────────────────────────────── -->
+  <footer role="contentinfo">
+    <div>
+      <p class="footer-brand">Executive Car Wash</p>
+      <p class="footer-tagline">Luxury · Rápido · Eficiente</p>
+    </div>
+    <ul class="footer-links" role="list">
+      <li><a href="#about">About</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <p class="footer-copy">&copy; 2026 Executive Car Wash. Puerto Rico.</p>
+  </footer>
+
+  <!-- ── Scripts ───────────────────────────────────────── -->
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    // ── Splash gate ────────────────────────────────────
+    (function () {
+      const splash    = document.getElementById('splash');
+      const splashCta = document.getElementById('splash-cta');
+      const video     = document.getElementById('tunnel-video');
+
+      document.body.style.overflow = 'hidden';
+
+      gsap.set('#splash-crown',   { opacity: 0, y: -20 });
+      gsap.set('#splash-brand',   { opacity: 0, y: 20  });
+      gsap.set('#splash-rule',    { opacity: 0 });
+      gsap.set('#splash-tagline', { opacity: 0 });
+      gsap.set('#splash-cta',     { opacity: 0, y: 10  });
+
+      gsap.timeline({ delay: 0.25 })
+        .to('#splash-crown',   { opacity: 1, y: 0, duration: 0.75, ease: 'power2.out' })
+        .to('#splash-brand',   { opacity: 1, y: 0, duration: 0.65, ease: 'power2.out' }, '-=0.45')
+        .to('#splash-rule',    { opacity: 1,        duration: 0.5  }, '-=0.2')
+        .to('#splash-tagline', { opacity: 1,        duration: 0.5  }, '-=0.35')
+        .to('#splash-cta',     { opacity: 1, y: 0, duration: 0.6,  ease: 'power2.out' }, '-=0.3');
+
+      function dismissSplash() {
+        gsap.to(splash, {
+          opacity: 0,
+          duration: 0.65,
+          ease: 'power2.inOut',
+          onComplete: function () {
+            splash.style.display = 'none';
+            document.body.style.overflow = '';
+
+            // Ensure video plays after user gesture
+            if (video) video.play().catch(function () {});
+
+            // Hard-jump to video section
+            const vs = document.getElementById('video-section');
+            if (vs) vs.scrollIntoView({ behavior: 'instant' });
+
+            requestAnimationFrame(function () { ScrollTrigger.refresh(); });
+          },
+        });
+      }
+
+      splashCta.addEventListener('click', dismissSplash);
+    }());
+
+    // ── Due Diligence dropdown ─────────────────────────
+    (function () {
+      const btn   = document.getElementById('nav-dd-btn');
+      const panel = document.getElementById('dd-panel');
+
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const open = panel.classList.toggle('open');
+        btn.setAttribute('aria-expanded', String(open));
+      });
+
+      document.addEventListener('click', function () {
+        if (panel.classList.contains('open')) {
+          panel.classList.remove('open');
+          btn.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && panel.classList.contains('open')) {
+          panel.classList.remove('open');
+          btn.setAttribute('aria-expanded', 'false');
+          btn.focus();
+        }
+      });
+    }());
+
+    // ── Scroll reveals ─────────────────────────────────
+    gsap.utils.toArray('.reveal').forEach(function (el) {
+      gsap.fromTo(el,
+        { opacity: 0, y: 24 },
+        {
+          opacity: 1, y: 0,
+          duration: 0.8,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 88%',
+            toggleActions: 'play none none none',
+          }
+        }
+      );
+    });
+
+    // ── Contact form ───────────────────────────────────
+    function handleSubmit(e) {
+      e.preventDefault();
+      const form     = e.target;
+      const honeypot = form.querySelector('[name="website"]');
+      const statusEl = document.getElementById('form-status');
+
+      if (honeypot && honeypot.value) return;
+
+      const name    = form.name.value.trim();
+      const email   = form.email.value.trim();
+      const message = form.message.value.trim();
+
+      if (!name || !email || !message) {
+        statusEl.textContent = 'Please fill in all fields.';
+        statusEl.style.color = '#c44';
+        statusEl.style.display = 'block';
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        statusEl.textContent = 'Please enter a valid email address.';
+        statusEl.style.color = '#c44';
+        statusEl.style.display = 'block';
+        return;
+      }
+
+      statusEl.textContent = 'Message received — we\'ll be in touch shortly.';
+      statusEl.style.color = 'var(--light-gold)';
+      statusEl.style.display = 'block';
+      form.reset();
+    }
+  </script>
+</body>
+</html>

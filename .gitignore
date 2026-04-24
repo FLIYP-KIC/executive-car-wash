@@ -1,0 +1,9 @@
+node_modules/
+temporary screenshots/
+.DS_Store
+.superpowers/
+serve.mjs
+screenshot.mjs
+package.json
+package-lock.json
+.claude/
