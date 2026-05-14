@@ -7,3 +7,5 @@ screenshot.mjs
 package.json
 package-lock.json
 .claude/
+.vercel
+.env*.local
